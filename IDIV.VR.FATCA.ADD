@@ -1,0 +1,32 @@
+SUBROUTINE IDIV.VR.FATCA.ADD
+*----------------------------------------------------
+*Dev name : Hamka Ardyansah
+*Dev Date : 4 septermber 2017
+*descripiton : 
+*-----------------------------------------------------
+
+$INSERT I_COMMON
+$INSERT I_EQUATE
+$INSERT I_F.CUSTOMER
+
+
+GOSUB INIT 
+GOSUB PROCESS
+
+RETURN
+*-----------------------------------------------------
+INIT:
+*-----------------------------------------------------
+
+CALL GET.LOC.REF("CUSTOMER","FORMULIR.FATCA",Y.FORMULIR.FATCA.POS)
+
+RETURN
+*-----------------------------------------------------
+PROCESS:
+*-----------------------------------------------------
+
+T.LOCREF<Y.FORMULIR.FATCA.POS,7> =""	
+	
+RETURN
+*-----------------------------------------------------
+END

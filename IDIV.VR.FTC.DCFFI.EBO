@@ -1,0 +1,52 @@
+SUBROUTINE IDIV.VR.FTC.DCFFI.EBO
+*----------------------------------------------------
+*Dev name : Hamka Ardyansah
+*Dev Date : 4 septermber 2017
+*descripiton : 
+*-----------------------------------------------------
+
+$INSERT I_COMMON
+$INSERT I_EQUATE
+$INSERT I_F.CUSTOMER
+
+
+GOSUB INIT 
+GOSUB PROCESS
+
+RETURN
+*-----------------------------------------------------
+INIT:
+*-----------------------------------------------------
+
+CALL GET.LOC.REF("CUSTOMER","NO.GIIN",Y.NO.GIIN.POS)
+CALL GET.LOC.REF("CUSTOMER","CORP.FORM",Y.CORP.FORM.POS)
+
+RETURN
+*-----------------------------------------------------
+PROCESS:
+*-----------------------------------------------------
+
+BEGIN CASE
+CASE COMI EQ 'Y.DCFFI'
+
+T.LOCREF<Y.NO.GIIN.POS,7> ="NOINPUT"	
+T.LOCREF<Y.CORP.FORM.POS,7> =""
+
+CASE COMI EQ 'Y.EBO'
+
+T.LOCREF<Y.NO.GIIN.POS,7> ="NOINPUT"	
+T.LOCREF<Y.CORP.FORM.POS,7> =""
+
+
+CASE COMI EQ 'N.NPFFI'
+
+T.LOCREF<Y.NO.GIIN.POS,7> ="NOINPUT"	
+T.LOCREF<Y.CORP.FORM.POS,7> =""
+
+END CASE
+
+RETURN
+*-----------------------------------------------------
+END
+
+

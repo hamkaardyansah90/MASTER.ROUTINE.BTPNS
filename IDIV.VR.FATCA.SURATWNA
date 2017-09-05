@@ -1,0 +1,32 @@
+SUBROUTINE IDIV.VR.FATCA.SURATWNA
+*----------------------------------------------------
+*Dev name : Hamka Ardyansah
+*Dev Date : 4 septermber 2017
+*descripiton : 
+*-----------------------------------------------------
+
+$INSERT I_COMMON
+$INSERT I_EQUATE
+$INSERT I_F.CUSTOMER
+
+
+GOSUB INIT 
+GOSUB PROCESS
+
+RETURN
+*-----------------------------------------------------
+INIT:
+*-----------------------------------------------------
+
+CALL GET.LOC.REF("CUSTOMER","TAX.WNA",Y.TAX.WNA.POS)
+
+RETURN
+*-----------------------------------------------------
+PROCESS:
+*-----------------------------------------------------
+
+T.LOCREF<Y.TAX.WNA.POS,7> =""
+
+RETURN
+*-----------------------------------------------------
+END

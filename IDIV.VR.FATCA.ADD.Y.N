@@ -1,0 +1,39 @@
+SUBROUTINE IDIV.VR.FATCA.ADD.Y.N
+*----------------------------------------------------
+*Dev name : Hamka Ardyansah
+*Dev Date : 4 septermber 2017
+*descripiton : 
+*-----------------------------------------------------
+
+$INSERT I_COMMON
+$INSERT I_EQUATE
+$INSERT I_F.CUSTOMER
+
+
+GOSUB INIT 
+GOSUB PROCESS
+
+RETURN
+*-----------------------------------------------------
+INIT:
+*-----------------------------------------------------
+
+CALL GET.LOC.REF("CUSTOMER","AMERICAN.ADD",Y.AMERICAN.ADD.POS)
+CALL GET.LOC.REF("CUSTOMER","FORMULIR.FATCA",Y.FORMULIR.FATCA.POS)
+
+RETURN
+*-----------------------------------------------------
+PROCESS:
+*-----------------------------------------------------
+
+BEGIN CASE
+CASE COMI EQ Y 
+T.LOCREF<Y.AMERICAN.ADD.POS,7> =""
+T.LOCREF<Y.AMERICAN.ADD.POS,2> =T.LOCREF<Y.AMERICAN.ADD.POS,2>:".1"
+CASE COMI NE Y 
+T.LOCREF<Y.FORMULIR.FATCA.POS,7> =""	
+END CASE
+
+RETURN
+*-----------------------------------------------------
+END
