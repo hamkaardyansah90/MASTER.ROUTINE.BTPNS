@@ -1,0 +1,39 @@
+SUBROUTINE IDIV.VR.FATCA.TAXWNA
+*----------------------------------------------------
+*Dev name : Hamka Ardyansah
+*Dev Date : 4 septermber 2017
+*descripiton : 
+*-----------------------------------------------------
+
+$INSERT I_COMMON
+$INSERT I_EQUATE
+$INSERT I_F.CUSTOMER
+
+
+GOSUB INIT 
+GOSUB PROCESS
+
+RETURN
+*-----------------------------------------------------
+INIT:
+*-----------------------------------------------------
+
+CALL GET.LOC.REF("CUSTOMER","NO.TIN",Y.NO.TIN.POS)
+CALL GET.LOC.REF("CUSTOMER","AMERICA.ADD.Y.N",Y.AMERICA.ADD.Y.N.POS)
+
+RETURN
+*-----------------------------------------------------
+PROCESS:
+*-----------------------------------------------------
+
+BEGIN CASE
+CASE COMI EQ Y 
+T.LOCREF<Y.NO.TIN.POS,7> =""
+T.LOCREF<Y.NO.TIN.POS,2> =T.LOCREF<Y.NO.TIN.POS,2>:".1"
+CASE COMI NE Y 
+T.LOCREF<Y.AMERICA.ADD.Y.N.POS,7> =""	
+END CASE
+
+RETURN
+*-----------------------------------------------------
+END

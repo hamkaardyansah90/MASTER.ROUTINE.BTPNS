@@ -1,0 +1,32 @@
+SUBROUTINE IDIV.VR.FATCA.GREENCARD
+*----------------------------------------------------
+*Dev name : Hamka Ardyansah
+*Dev Date : 4 septermber 2017
+*descripiton : 
+*-----------------------------------------------------
+
+$INSERT I_COMMON
+$INSERT I_EQUATE
+$INSERT I_F.CUSTOMER
+
+
+GOSUB INIT 
+GOSUB PROCESS
+
+RETURN
+*-----------------------------------------------------
+INIT:
+*-----------------------------------------------------
+
+CALL GET.LOC.REF("CUSTOMER","BIRTH.AS",Y.BIRTH.AS.POS)
+	
+RETURN
+*-----------------------------------------------------
+PROCESS:
+*-----------------------------------------------------
+
+T.LOCREF<Y.BIRTH.AS.POS,7> =""
+print test
+RETURN
+*-----------------------------------------------------
+END

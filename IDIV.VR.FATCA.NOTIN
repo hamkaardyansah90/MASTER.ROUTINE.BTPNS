@@ -1,0 +1,32 @@
+SUBROUTINE IDIV.VR.FATCA.NOTIN
+*----------------------------------------------------
+*Dev name : Hamka Ardyansah
+*Dev Date : 4 septermber 2017
+*descripiton : 
+*-----------------------------------------------------
+
+$INSERT I_COMMON
+$INSERT I_EQUATE
+$INSERT I_F.CUSTOMER
+
+
+GOSUB INIT 
+GOSUB PROCESS
+
+RETURN
+*-----------------------------------------------------
+INIT:
+*-----------------------------------------------------
+
+CALL GET.LOC.REF("CUSTOMER","AMERICA.ADD.Y.N",Y.AMERICA.ADD.Y.N.POS)
+
+RETURN
+*-----------------------------------------------------
+PROCESS:
+*-----------------------------------------------------
+
+T.LOCREF<Y.AMERICA.ADD.Y.N.POS,7> =""	
+
+RETURN
+*-----------------------------------------------------
+END
