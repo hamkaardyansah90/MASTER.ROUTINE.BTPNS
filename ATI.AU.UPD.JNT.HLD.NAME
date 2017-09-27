@@ -1,0 +1,108 @@
+*-----------------------------------------------------------------------------
+* <Rating>-50</Rating>
+*-----------------------------------------------------------------------------
+    SUBROUTINE ATI.AU.UPD.JNT.HLD.NAME
+*-----------------------------------------------------------------------------
+* Developer Name     : ATI Mauizah Hasanah
+* Development Date   : 11 October 2016
+* Description        : Update short.name in joint holder name in account
+*-----------------------------------------------------------------------------
+* Modification History:-
+*-----------------------------------------------------------------------------
+* Date               :
+* Modified by        :
+* Description        :
+*-----------------------------------------------------------------------------
+    $INSERT I_COMMON
+    $INSERT I_EQUATE
+    $INSERT I_F.CUSTOMER
+    $INSERT I_F.ACCOUNT
+*-----------------------------------------------------------------------------
+MAIN:
+*-----------------------------------------------------------------------------
+    GOSUB INIT
+
+    IF R.NEW(EB.CUS.SHORT.NAME) NE R.OLD(EB.CUS.SHORT.NAME) THEN
+        GOSUB PROCESS
+    END
+
+    RETURN
+
+*-----------------------------------------------------------------------------
+INIT:
+*-----------------------------------------------------------------------------
+
+    FN.ATI.TT.AC.JOINT.HOLDER = "F.ATI.TT.AC.JOINT.HOLDER"
+    F.ATI.TT.AC.JOINT.HOLDER  = ""
+    CALL OPF(FN.ATI.TT.AC.JOINT.HOLDER, F.ATI.TT.AC.JOINT.HOLDER)
+
+    FN.ACCOUNT = "F.ACCOUNT"
+    F.ACCOUNT  = ""
+    CALL OPF(FN.ACCOUNT, F.ACCOUNT)
+
+    FN.CUSTOMER = "F.CUSTOMER"
+    F.CUSTOMER  = ""
+    CALL OPF(FN.CUSTOMER, F.CUSTOMER)
+
+    Y.APP      = "ACCOUNT"
+    Y.FLD.NAME = "ATI.JOINT.NAME" :VM: "ATI.AC.JOIN.FLG"
+    Y.POS      = ""
+    CALL MULTI.GET.LOC.REF(Y.APP, Y.FLD.NAME,Y.POS)
+    Y.ATI.JOINT.NAME.POS  = Y.POS<1,1>
+    Y.ATI.AC.JOIN.FLG.POS = Y.POS<1,2>
+
+    Y.SHORT.NAME = R.NEW(EB.CUS.SHORT.NAME)
+
+    RETURN
+
+*-----------------------------------------------------------------------------
+PROCESS:
+*-----------------------------------------------------------------------------
+
+    Y.ID.CUSTOMER = ID.NEW
+    CALL F.READ(FN.ATI.TT.AC.JOINT.HOLDER, Y.ID.CUSTOMER, R.ATI.TT.AC.JOINT.HOLDER, F.ATI.TT.AC.JOINT.HOLDER, ATI.TT.AC.JOINT.HOLDER.ERR)
+    Y.CNT.AC.JNT.HOLDER = DCOUNT(R.ATI.TT.AC.JOINT.HOLDER, FM)
+
+    FOR YACC = 1 TO Y.CNT.AC.JNT.HOLDER
+        Y.ID.ACCOUNT = R.ATI.TT.AC.JOINT.HOLDER<YACC>
+        CALL F.READ(FN.ACCOUNT, Y.ID.ACCOUNT, R.ACCOUNT, F.ACCOUNT, ACCOUNT.ERR)
+        Y.JOINT.FLAG        = R.ACCOUNT<AC.LOCAL.REF, Y.ATI.AC.JOIN.FLG.POS>
+        Y.CONV.JOINT.FLAG   = " " : Y.JOINT.FLAG : " "
+        Y.JOINT.HOLDER      = R.ACCOUNT<AC.JOINT.HOLDER>
+        Y.JOINT.HOLDER.NAME = R.ACCOUNT<AC.LOCAL.REF, Y.ATI.JOINT.NAME.POS>
+        Y.CNT.JNT.HLD       = DCOUNT(Y.JOINT.HOLDER, VM)
+
+        CONVERT SM TO "" IN Y.JOINT.HOLDER.NAME
+        FIND Y.ID.CUSTOMER IN Y.JOINT.HOLDER SETTING YFM, YVM, YSM THEN
+            Y.POSITION = YVM + 1
+
+            Y.REP.JOINT.HOLDER.NAME = EREPLACE(Y.JOINT.HOLDER.NAME, Y.CONV.JOINT.FLAG, FM)
+            Y.REP.SHORT.NAME        = REPLACE(Y.REP.JOINT.HOLDER.NAME, Y.POSITION; Y.SHORT.NAME)
+            Y.FIX.JOINT.HOLDER.NAME = EREPLACE(Y.REP.SHORT.NAME, FM, Y.CONV.JOINT.FLAG)
+        END
+
+        Y.LENGTH = LEN(Y.FIX.JOINT.HOLDER.NAME)
+        Y.DIVIDE = Y.LENGTH / 35
+        Y.ROUND  = DROUND(Y.DIVIDE, 0)
+        Y.ROUND += 1
+        YX       = 1
+        YY       = 35
+
+        FOR YCNT = 1 TO Y.ROUND
+            Y.GET.NAME = Y.FIX.JOINT.HOLDER.NAME[YX, YY]
+            R.ACCOUNT<AC.LOCAL.REF, Y.ATI.JOINT.NAME.POS, YCNT> = Y.GET.NAME
+
+            YX += 35
+        NEXT YCNT
+
+        CALL ID.LIVE.WRITE(FN.ACCOUNT, Y.ID.ACCOUNT, R.ACCOUNT)
+    NEXT YACC
+
+    RETURN
+*-----------------------------------------------------------------------------
+END
+
+
+
+
+

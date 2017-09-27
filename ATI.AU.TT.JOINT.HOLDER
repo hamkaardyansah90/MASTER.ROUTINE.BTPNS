@@ -1,0 +1,80 @@
+*-----------------------------------------------------------------------------
+* <Rating>-33</Rating>
+*-----------------------------------------------------------------------------
+    SUBROUTINE ATI.AU.TT.JOINT.HOLDER
+*-----------------------------------------------------------------------------
+* Developer Name     : ATI Mauizah Hasanah
+* Development Date   : 14 September 2016
+* Description        : Write Joint holder to joint holder concate table
+*-----------------------------------------------------------------------------
+* Modification History:-
+*-----------------------------------------------------------------------------
+* Date               :
+* Modified by        :
+* Description        :
+*-----------------------------------------------------------------------------
+    $INSERT I_COMMON
+    $INSERT I_EQUATE
+    $INSERT I_F.ACCOUNT
+*-----------------------------------------------------------------------------
+MAIN:
+*-----------------------------------------------------------------------------
+    GOSUB INIT
+
+    RETURN
+
+*-----------------------------------------------------------------------------
+INIT:
+*-----------------------------------------------------------------------------
+
+    FN.ATI.AC.JOINT.HOLDER = "F.ATI.TT.AC.JOINT.HOLDER"
+    F.ATI.AC.JOINT.HOLDER  = ""
+    CALL OPF(FN.ATI.AC.JOINT.HOLDER, F.ATI.AC.JOINT.HOLDER)
+
+    Y.ID.ACCOUNT   = ID.NEW
+    Y.JOINT.HOLDER = R.NEW(AC.JOINT.HOLDER)
+
+    IF Y.JOINT.HOLDER THEN
+        Y.CNT.JOINT.HOLDER = DCOUNT(Y.JOINT.HOLDER, VM)
+
+        GOSUB PROCESS
+    END
+
+    RETURN
+
+*-----------------------------------------------------------------------------
+PROCESS:
+*-----------------------------------------------------------------------------
+
+    FOR YACC = 1 TO Y.CNT.JOINT.HOLDER
+        Y.JNT.HOLD = Y.JOINT.HOLDER<1, YACC>
+
+        CALL F.READ(FN.ATI.AC.JOINT.HOLDER, Y.JNT.HOLD, R.ATI.AC.JOINT.HOLDER, F.ATI.AC.JOINT.HOLDER, ATI.AC.JOINT.HOLDER.ERR)
+
+        IF R.ATI.AC.JOINT.HOLDER THEN
+            LOCATE Y.ID.ACCOUNT IN R.ATI.AC.JOINT.HOLDER SETTING YFM ELSE
+*                CONTINUE
+                R.ATI.AC.JOINT.HOLDER<-1> = Y.ID.ACCOUNT
+            END
+
+*           Y.CNT.ATI.TT.JNT.HOLD = DCOUNT(R.ATI.AC.JOINT.HOLDER, FM)
+*           Y.POS.ATI.TT.JNT.HOLD = Y.CNT.ATI.TT.JNT.HOLD + 1
+*           R.ATI.AC.JOINT.HOLDER<Y.POS.ATI.TT.JNT.HOLD> = Y.ID.ACCOUNT
+        END ELSE
+            R.ATI.AC.JOINT.HOLDER = Y.ID.ACCOUNT
+        END
+
+        WRITE R.ATI.AC.JOINT.HOLDER TO F.ATI.AC.JOINT.HOLDER, Y.JNT.HOLD
+
+    NEXT YACC
+
+    RETURN
+*-----------------------------------------------------------------------------
+END
+
+
+
+
+
+
+

@@ -1,0 +1,93 @@
+*-----------------------------------------------------------------------------
+* <Rating>-50</Rating>
+*-----------------------------------------------------------------------------
+    SUBROUTINE ATI.AU.AC.JOINT.NAME
+*-----------------------------------------------------------------------------
+* Developer Name     : ATI Mauizah Hasanah
+* Development Date   : 11 October 2016
+* Description        : Routine deal slip to show joint holder
+*-----------------------------------------------------------------------------
+* Modification History:-
+*-----------------------------------------------------------------------------
+* Date               :
+* Modified by        :
+* Description        :
+*-----------------------------------------------------------------------------
+    $INSERT I_COMMON
+    $INSERT I_EQUATE
+    $INSERT I_F.ACCOUNT
+    $INSERT I_F.CUSTOMER
+*-----------------------------------------------------------------------------
+MAIN:
+*-----------------------------------------------------------------------------
+    GOSUB INIT
+    GOSUB PROCESS
+
+    RETURN
+
+*-----------------------------------------------------------------------------
+INIT:
+*-----------------------------------------------------------------------------
+
+    FN.ACCOUNT = "F.ACCOUNT"
+    F.ACCOUNT  = ""
+    CALL OPF(FN.ACCOUNT, F.ACCOUNT)
+
+    FN.CUSTOMER = "F.CUSTOMER"
+    F.CUSTOMER  = ""
+    CALL OPF(FN.CUSTOMER, F.CUSTOMER)
+
+    Y.APP      = "ACCOUNT"
+    Y.FLD.NAME = "ATI.AC.JOIN.FLG" :VM: "ATI.JOINT.NAME"
+    Y.POS      = ""
+    CALL MULTI.GET.LOC.REF(Y.APP, Y.FLD.NAME,Y.POS)
+    Y.ATI.AC.JOIN.FLG.POS = Y.POS<1,1>
+    Y.ATI.JOINT.NAME.POS  = Y.POS<1,2>
+
+    RETURN
+
+*-----------------------------------------------------------------------------
+PROCESS:
+*-----------------------------------------------------------------------------
+
+    Y.ACCOUNT.TITLE.1 = R.NEW(AC.ACCOUNT.TITLE.1)
+    Y.ATI.AC.JOIN.FLG = R.NEW(AC.LOCAL.REF)<1, Y.ATI.AC.JOIN.FLG.POS>
+    Y.JOINT.HOLDER    = R.NEW(AC.JOINT.HOLDER)
+
+    IF Y.JOINT.HOLDER THEN
+        Y.JOINT.NAME = Y.ACCOUNT.TITLE.1
+
+        Y.CNT.JOINT.HOLDER = DCOUNT(Y.JOINT.HOLDER, VM)
+        FOR YJNT = 1 TO Y.CNT.JOINT.HOLDER
+            Y.ID.CUSTOMER = Y.JOINT.HOLDER<1, YJNT>
+            CALL F.READ(FN.CUSTOMER, Y.ID.CUSTOMER, R.CUSTOMER, F.CUSTOMER, CUSTOMER.ERR)
+            Y.SHORT.NAME = R.CUSTOMER<EB.CUS.SHORT.NAME>
+
+            Y.JOINT.NAME := " " : Y.ATI.AC.JOIN.FLG : " " : Y.SHORT.NAME
+        NEXT YJNT
+
+*       Y.LENGTH = LEN(Y.JOINT.NAME)
+*       Y.DIVIDE = Y.LENGTH / 35
+*       Y.ROUND  = DROUND(Y.DIVIDE, 0)
+*       Y.ROUND += 1
+*       YX       = 1
+*       YY       = 35
+
+*        FOR YCNT = 1 TO Y.ROUND
+*            Y.GET.NAME = Y.JOINT.NAME[YX, YY]
+        R.NEW(AC.LOCAL.REF)<1, Y.ATI.JOINT.NAME.POS> = Y.JOINT.NAME
+
+*            YX += 35
+*        NEXT YCNT
+    END
+
+    RETURN
+*-----------------------------------------------------------------------------
+END
+
+
+
+
+
+
+

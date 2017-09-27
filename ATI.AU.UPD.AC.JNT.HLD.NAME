@@ -1,0 +1,81 @@
+*-----------------------------------------------------------------------------
+* <Rating>-50</Rating>
+*-----------------------------------------------------------------------------
+    SUBROUTINE ATI.AU.UPD.AC.JNT.HLD.NAME
+*-----------------------------------------------------------------------------
+* Developer Name     : ATI Mauizah Hasanah
+* Development Date   : 12 October 2016
+* Description        : Update ACCOUNT.TITLE.1 in joint holder name in account
+*-----------------------------------------------------------------------------
+* Modification History:-
+*-----------------------------------------------------------------------------
+* Date               :
+* Modified by        :
+* Description        :
+*-----------------------------------------------------------------------------
+    $INSERT I_COMMON
+    $INSERT I_EQUATE
+    $INSERT I_F.CUSTOMER
+    $INSERT I_F.ACCOUNT
+*-----------------------------------------------------------------------------
+MAIN:
+*-----------------------------------------------------------------------------
+    GOSUB INIT
+
+    IF R.NEW(AC.ACCOUNT.TITLE.1) NE R.OLD(AC.ACCOUNT.TITLE.1) THEN
+        GOSUB PROCESS
+    END
+
+    RETURN
+
+*-----------------------------------------------------------------------------
+INIT:
+*-----------------------------------------------------------------------------
+
+    Y.APP      = "ACCOUNT"
+    Y.FLD.NAME = "ATI.JOINT.NAME" :VM: "ATI.AC.JOIN.FLG"
+    Y.POS      = ""
+    CALL MULTI.GET.LOC.REF(Y.APP, Y.FLD.NAME,Y.POS)
+    Y.ATI.JOINT.NAME.POS  = Y.POS<1,1>
+    Y.ATI.AC.JOIN.FLG.POS = Y.POS<1,2>
+
+    Y.NEW.ACCOUNT.TITLE.1 = R.NEW(AC.ACCOUNT.TITLE.1)
+
+    RETURN
+
+*-----------------------------------------------------------------------------
+PROCESS:
+*-----------------------------------------------------------------------------
+
+    Y.JOINT.FLAG        = R.NEW(AC.LOCAL.REF)<1, Y.ATI.AC.JOIN.FLG.POS>
+    Y.CONV.JOINT.FLAG   = " " : Y.JOINT.FLAG : " "
+    Y.JOINT.HOLDER      = R.NEW(AC.JOINT.HOLDER)
+    Y.JOINT.HOLDER.NAME = R.NEW(AC.LOCAL.REF)<1, Y.ATI.JOINT.NAME.POS>
+    Y.CNT.JNT.HLD       = DCOUNT(Y.JOINT.HOLDER, VM)
+
+    CONVERT SM TO "" IN Y.JOINT.HOLDER.NAME
+
+    Y.REP.JOINT.HOLDER.NAME = EREPLACE(Y.JOINT.HOLDER.NAME, Y.CONV.JOINT.FLAG, FM)
+    Y.REP.SHORT.NAME        = REPLACE(Y.REP.JOINT.HOLDER.NAME, 1; Y.NEW.ACCOUNT.TITLE.1)
+    Y.FIX.JOINT.HOLDER.NAME = EREPLACE(Y.REP.SHORT.NAME, FM, Y.CONV.JOINT.FLAG)
+
+    Y.LENGTH = LEN(Y.FIX.JOINT.HOLDER.NAME)
+    Y.DIVIDE = Y.LENGTH / 35
+    Y.ROUND  = DROUND(Y.DIVIDE, 0)
+    Y.ROUND += 1
+    YX       = 1
+    YY       = 35
+
+    FOR YCNT = 1 TO Y.ROUND
+        Y.GET.NAME = Y.FIX.JOINT.HOLDER.NAME[YX, YY]
+        R.NEW(AC.LOCAL.REF)<1, Y.ATI.JOINT.NAME.POS, YCNT> = Y.GET.NAME
+
+        YX += 35
+    NEXT YCNT
+
+    RETURN
+*-----------------------------------------------------------------------------
+END
+
+
+

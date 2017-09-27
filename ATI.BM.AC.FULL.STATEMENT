@@ -1,0 +1,195 @@
+*-----------------------------------------------------------------------------
+* <Rating>108</Rating>
+*-----------------------------------------------------------------------------
+    SUBROUTINE ATI.BM.AC.FULL.STATEMENT(Y.ID)
+*-----------------------------------------------------------------------------
+* Developer Name     : Dwi K
+* Development Date   : 20161006
+* Description        : Routine to generate full statement
+*-----------------------------------------------------------------------------
+* Modification History:-
+*-----------------------------------------------------------------------------
+* Date               :
+* Modified by        :
+* Description        :
+*-----------------------------------------------------------------------------
+    $INSERT I_COMMON
+    $INSERT I_EQUATE
+    $INSERT I_ENQUIRY.COMMON
+    $INSERT I_RC.COMMON
+    $INSERT I_F.ACCOUNT
+    $INSERT I_ATI.BM.AC.FULL.STATEMENT.COMMON
+
+*-----------------------------------------------------------------------------
+MAIN:
+*-----------------------------------------------------------------------------
+*    C$RPT.IN.HOLD.ID = ""
+    CALL PRINTER.ON("BTPNS.ACCOUNT.STATEMENT","")
+
+    GOSUB INIT
+    GOSUB PROCESS
+
+    CALL PRINTER.CLOSE("BTPNS.ACCOUNT.STATEMENT","","")
+*    CALL PRINTER.OFF
+
+    RETURN
+*-----------------------------------------------------------------------------
+INIT:
+*-----------------------------------------------------------------------------
+    Y.FOLDER        = "ACSTMT.BP"
+    Y.FOLDER.MONTH  = "ACSTMT.BP\":Y.TODAY[1,6]
+    Y.STMT.ENTRY.ID = ""
+    Y.CNT           = ""
+
+    FN.HOLD.FOLDER = '..\bnk.data\eb\&HOLD&'
+    F.HOLD.FOLDER  = ''
+    CALL OPF(FN.HOLD.FOLDER,F.HOLD.FOLDER)
+
+    Y.AC.ID = FIELD(Y.ID,'-',1)
+    CALL F.READ(FN.ACCOUNT,Y.AC.ID,R.ACC,F.ACCOUNT,ACC.ERR)
+    IF R.ACC THEN
+        Y.COMP.ID = R.ACC<AC.CO.CODE>
+    END ELSE
+        CALL F.READ(FN.ACCOUNT.HIS,Y.ACCT.ID:";1",R.ACC,F.ACCOUNT.HIS,ACC.HIS.ERR)
+        Y.COMP.ID = R.ACC<AC.CO.CODE>
+    END
+
+    Y.HOLD.ID    = C$RPT.IN.HOLD.ID
+    Y.HOLD.AC.ID = C$RPT.IN.HOLD.ID:'.':Y.AC.ID
+
+    RETURN
+*-----------------------------------------------------------------------------
+PROCESS:
+*-----------------------------------------------------------------------------
+    CALL F.READ(FN.ACCT.STMT.PRINT, Y.AC.ID, R.ACCT.STMT.PRINT, F.ACCT.STMT.PRINT, ACCT.STMT.PRINT.ERR)
+    IF R.ACCT.STMT.PRINT THEN
+        Y.CNT.DATE = DCOUNT(R.ACCT.STMT.PRINT, @FM)
+        FOR YLOOP = 1 TO Y.CNT.DATE
+            Y.DATE = FIELD(R.ACCT.STMT.PRINT<YLOOP>,'/',1,1)
+            Y.STMT.PRINTED.ID = Y.AC.ID :'-': Y.DATE
+            CALL F.READ(FN.STMT.PRINTED, Y.STMT.PRINTED.ID, R.STMT.PRINTED, F.STMT.PRINTED, STMT.PRINTED.ERR)
+            IF R.STMT.PRINTED THEN
+                Y.STMT.ENTRY.ID<-1>= R.STMT.PRINTED
+            END
+        NEXT YLOOP
+
+        CONVERT @FM TO " " IN Y.STMT.ENTRY.ID
+
+        ENQ.SELECTION<1> = "BTPNS.ACCOUNT.STATEMENT"
+        ENQ.SELECTION<2,1> = "STATEMENT.ID"
+        ENQ.SELECTION<3,1> = "EQ"
+        ENQ.SELECTION<4,1> = Y.AC.ID
+        ENQ.SELECTION<2,2> = "@ID"
+        ENQ.SELECTION<3,2> = "EQ"
+        ENQ.SELECTION<4,2> = Y.STMT.ENTRY.ID
+        ENQ.SELECTION<10> = "OUTPUT"    ;* Direct to print file
+
+        CALL ENQUIRY.DISPLAY(ENQ.SELECTION)
+
+    END
+
+    CPY.CMD = "COPY FROM &HOLD& TO ":Y.FOLDER:" ":Y.HOLD.ID:",":Y.HOLD.AC.ID:" OVERWRITING"
+    EXECUTE CPY.CMD
+
+    GOSUB CONCATE
+
+    Y.FILE.NAME     = Y.TODAY:".":Y.COMP.ID:".":Y.AC.ID:".pdf"
+
+    DEL.CMD = "DELETE ":Y.FOLDER.MONTH:" ":Y.FILE.NAME
+    EXECUTE DEL.CMD
+
+    Y.CMD.PDF = "txt2pdf " :Y.FOLDER: "\" :Y.TEXTFILE: " " :Y.FOLDER.MONTH: "\" :Y.FILE.NAME: " -pfs8 -pfn200 -pls10 -ptm96 -plm20 -pbm96 -prm20 -lpp60 -pps7"
+    PRINT Y.CMD.PDF
+    EXECUTE Y.CMD.PDF
+
+    DELETE F.ATI.TT.AC.FULL.STATEMENT.TEMP,Y.ID
+    DELETE F.FILE.DATA,Y.HOLD.AC.ID
+    DELETE F.FILE.DATA,Y.TEXTFILE
+
+    RETURN
+*-----------------------------------------------------------------------------
+CONCATE:
+*-----------------------------------------------------------------------------
+    Y.TEXTFILE = Y.TODAY:".":Y.COMP.ID:".":Y.AC.ID:".txt"
+
+    OPENSEQ "ACSTMT.BP", Y.TEXTFILE TO F.IN ELSE CREATE F.IN ELSE
+        PRINT "CAN'T OPEN TEXT FILE "
+        ABORT
+    END
+
+    Y.TEMP       = ""
+    Y.TEMP.PAGE  = ""
+    Y.FF.CHAR    = CHAR(12)
+    Y.CNT.CHR    = 0
+    Y.RECD.FLAG  = 0
+    Y.CRLF       = CHAR(13):CHAR(10)
+
+    CALL F.READ(FN.FILE.DATA,Y.HOLD.AC.ID,R.FOLD,F.FILE.DATA,FOLD.ERR)
+    CNT = DCOUNT(R.FOLD,@FM)
+    FOR J=1 TO CNT
+        Y.TEMP.LINE = R.FOLD<J>
+        CONVERT Y.CRLF TO CHAR(10) IN Y.TEMP.LINE
+
+        IF Y.FF.CHAR EQ Y.TEMP.LINE THEN
+            Y.CNT.CHR       = 1
+            GOSUB BUILD.PAGE
+            CONTINUE
+        END
+
+        BEGIN CASE
+        CASE (Y.RECD.FLAG)
+            IF Y.TEMP.PAGE THEN
+                Y.TEMP.PAGE := Y.CRLF : R.FOLD<J>
+            END ELSE
+                Y.TEMP.PAGE  = R.FOLD<J>
+            END
+        CASE (Y.CNT.CHR)
+            IF Y.TEMP.LINE THEN
+                IF Y.TEMP.PAGE THEN
+                    Y.TEMP.PAGE := Y.CRLF : R.FOLD<J>
+                END ELSE
+                    Y.TEMP.PAGE  = R.FOLD<J>
+                END
+                Y.RECD.FLAG  = 1
+                Y.CNT       += 1
+            END
+        END CASE
+    NEXT J
+
+    SEEK F.IN,0,2 THEN
+        WRITEBLK Y.TEMP ON F.IN ELSE
+        END
+    END
+
+    CLOSESEQ F.IN
+
+    RETURN
+*-----------------------------------------------------------------------------
+BUILD.PAGE:
+*-----------------------------------------------------------------------------
+    IF Y.TEMP.PAGE THEN
+        Y.CNT.LINE   = DCOUNT(Y.TEMP.PAGE, Y.CRLF)
+        IF Y.CNT.LINE LT 60 THEN
+            Y.ADDED.LINE = 60 - Y.CNT.LINE
+            FOR A=1 TO Y.ADDED.LINE
+                Y.TEMP.PAGE := Y.CRLF
+            NEXT A
+        END
+        Y.RECD.FLAG  = 0
+        Y.TEMP      := Y.TEMP.PAGE : Y.CRLF
+        Y.TEMP.PAGE  = ""
+    END
+
+    RETURN
+*-----------------------------------------------------------------------------
+END
+
+
+
+
+
+
+
+
+
+

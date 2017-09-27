@@ -1,0 +1,76 @@
+*-----------------------------------------------------------------------------
+* <Rating>-20</Rating>
+*-----------------------------------------------------------------------------
+    SUBROUTINE ATI.BM.AC.FULL.STATEMENT.LOAD
+*-----------------------------------------------------------------------------
+* Developer Name     : Dwi K
+* Development Date   : 20161006
+* Description        : Routine to generate full statement
+*-----------------------------------------------------------------------------
+* Modification History:-
+*-----------------------------------------------------------------------------
+* Date               :
+* Modified by        :
+* Description        :
+*-----------------------------------------------------------------------------
+    $INSERT I_COMMON
+    $INSERT I_EQUATE
+    $INSERT I_ENQUIRY.COMMON
+    $INSERT I_RC.COMMON
+    $INSERT I_F.DATES
+    $INSERT I_ATI.BM.AC.FULL.STATEMENT.COMMON
+
+*-----------------------------------------------------------------------------
+MAIN:
+*-----------------------------------------------------------------------------
+    GOSUB INIT
+
+    RETURN
+*-----------------------------------------------------------------------------
+INIT:
+*-----------------------------------------------------------------------------
+    FN.ACCOUNT = 'F.ACCOUNT'
+    F.ACCOUNT  = ''
+    CALL OPF(FN.ACCOUNT, F.ACCOUNT)
+
+    FN.ACCOUNT.HIS = "F.ACCOUNT$HIS"
+    F.ACCOUNT.HIS  = ""
+    CALL OPF(FN.ACCOUNT.HIS,F.ACCOUNT.HIS)
+
+    FN.ACCT.STMT.PRINT = 'F.ACCT.STMT.PRINT'
+    F.ACCT.STMT.PRINT  = ''
+    CALL OPF(FN.ACCT.STMT.PRINT, F.ACCT.STMT.PRINT)
+
+    FN.STMT.PRINTED = 'F.STMT.PRINTED'
+    F.STMT.PRINTED  = ''
+    CALL OPF(FN.STMT.PRINTED, F.STMT.PRINTED)
+
+    FN.ATI.TT.AC.FULL.STATEMENT.TEMP = 'F.ATI.TT.AC.FULL.STATEMENT.TEMP'
+    F.ATI.TT.AC.FULL.STATEMENT.TEMP  = ''
+    CALL OPF(FN.ATI.TT.AC.FULL.STATEMENT.TEMP,F.ATI.TT.AC.FULL.STATEMENT.TEMP)
+
+    FN.HOLD = "F.HOLD.CONTROL"
+    F.HOLD  = ""
+    CALL OPF(FN.HOLD,F.HOLD)
+
+    FN.FILE.DATA = "../bnk.run/ACSTMT.BP"
+    F.FILE.DATA = ""
+    CALL OPF(FN.FILE.DATA,F.FILE.DATA)
+
+    FN.DATES = "F.DATES"
+    F.DATES  = ""
+    CALL OPF(FN.DATES,F.DATES)
+
+    CALL F.READ(FN.DATES,ID.COMPANY,R.DATE,F.DATES,DATES.ERR)
+    Y.TODAY = R.DATE<EB.DAT.LAST.WORKING.DAY>
+
+    Y.COMP.ID = BATCH.DETAILS<3,1,2>
+
+    RETURN
+*-----------------------------------------------------------------------------
+END
+
+
+
+
+
