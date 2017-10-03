@@ -12,7 +12,6 @@ $INSERT I_F.CUSTOMER
 
 GOSUB INIT 
 GOSUB PROCESS
-
 RETURN
 *-----------------------------------------------------
 INIT:
