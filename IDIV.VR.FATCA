@@ -12,7 +12,7 @@ $INSERT I_F.CUSTOMER
 
 GOSUB INIT 
 GOSUB PROCESS
-
+test upload
 RETURN
 *-----------------------------------------------------
 INIT:
